@@ -68,34 +68,6 @@ class CanTP:
         self.padding= padding
         self.isFD= isFD
     
-    #Service for upper layer
-    def init(self):
-        print("Init")
-    def transmit():
-        print("Transmit")
-    def CancelTransmit():
-        print("CancelTransmit")
-
-    #Service for lower layer
-    def TxConfirmation():
-        print("TxConfirmation")
-    def RxIndication():
-        print("RxIndication")
-
-    #Internal Behaviour
-    def PduR_CanTpStartOfReception():
-        print("PduR_CanTpStartOfReception")
-    def PduR_CanTpTxConfirmation():
-        print("PduR_CanTpTxConfirmation")
-    def PduR_CanTpRxIndication():
-        print("PduR_CanTpRxIndication")
-    def PduR_CanTpCopyRxData():
-        print("PduR_CanTpCopyRxData")
-    def PduR_CanTpCopyTxData():
-        print("PduR_CanTpCopyTxData")
-    def CanIf_Transmit():
-        print("CanIf_Transmit")
-    
     def send_one_frame(self, data, timeout= Defaults.TIMEOUT.value):
         max_frame_length=MaxValues.CAN_FD_MAX_DATA_FRAME_LENGTH.value if self.isFD else MaxValues.CAN_CLASSIC_MAX_DATA_FRAME_LENGTH.value
         # Tìm giá trị padding gần nhất lớn hơn chiều dài dữ liệu hiện tại
