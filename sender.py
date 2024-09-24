@@ -1,3 +1,10 @@
+"""
+sender.py
+
+Chương trình sử dụng thư viện CanTP (cantp.py) để gửi tin nhắn qua mạng CAN.
+Yêu cầu phần cứng CAN hỗ trợ để thực hiện việc truyền tin nhắn.
+"""
+
 import can
 import time
 import threading

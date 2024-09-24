@@ -1,3 +1,9 @@
+"""
+cantp.py
+
+Thư viện xử lý giao thức CAN Transport Protocol (CanTP) cho việc gửi và nhận tin nhắn qua CAN và CANFD.
+Bao gồm các chức năng quản lý các frame, kiểm soát timeout, padding, và các cơ chế truyền tin theo chuẩn CANTP.
+"""
 import can
 import struct
 import time

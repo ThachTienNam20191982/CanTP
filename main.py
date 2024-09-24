@@ -1,3 +1,10 @@
+"""
+main.py
+
+Chương trình chính sử dụng thư viện CanTP (cantp.py) để mô phỏng việc gửi và nhận tin nhắn qua CAN bus ảo.
+Chạy trong môi trường virtual bus, không yêu cầu phần cứng CAN thực tế.
+"""
+
 import can
 import threading
 import time
