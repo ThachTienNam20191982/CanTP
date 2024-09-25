@@ -10,13 +10,13 @@ import time
 import random
 from enum import Enum
 
-NAByte = 0xFF
-PADDING_BYTE = 0xFF
-MESSAGER_BUFFER_WAIT_LENGTH=100
-N_WFTmax = 2
-MESSAGER_BUFFER_MAXIMUM_LENGTH=10000
+NAByte = 0xFF                           # N/A byte của FlowControl
+PADDING_BYTE = 0xFF                     # Padding byte của CAN Frame
+MESSAGER_BUFFER_WAIT_LENGTH=1000        # Độ dài buffer tối đa trước khi phải gửi Waiting FlowControl
+N_WFTmax = 2                            # Số lần tối đa gửi waiting FlowControl
+MESSAGER_BUFFER_MAXIMUM_LENGTH=10000    # Độ dài buffer tối đa trước khi phải gửi Overflow FlowControl
 
-# Danh sách các giá trị bậc muốn dùng để padding
+# Danh sách các giá trị bậc muốn dùng để padding trong CAN Frame
 PADDING_SIZES = [8, 12, 16, 20, 24, 32, 48, 64]
 
 N_Ar = 1 # Time for transmission of the CAN frame (any N-PDU) on the receiver side
@@ -61,6 +61,7 @@ class MaxValues(Enum):
     MAX_PAYLOAD_PER_FIRST_FD_FRAME_DATA_SMALLER_THAN_4095 = 62      # Số byte SDU tối đa trong một gói FirstFrame Can FD khi data ít hơn 4095 byte
     MAX_PAYLOAD_PER_FIRST_FD_FRAME_DATA_BIGGER_THAN_4095 = 58       # Số byte SDU tối đa trong một gói FirstFrame Can FD khi data nhiều hơn 4095 byte
      
+#Class CANTP
 class CanTP:
     def __init__(self, bus:can.BusABC, arbitration_id, padding=False, isFD=False):
         self.bus = bus
@@ -68,6 +69,7 @@ class CanTP:
         self.padding= padding
         self.isFD= isFD
     
+    #Gửi 1 Frame, thêm  padding và check timeout nếu có
     def send_one_frame(self, data, timeout= Defaults.TIMEOUT.value):
         max_frame_length=MaxValues.CAN_FD_MAX_DATA_FRAME_LENGTH.value if self.isFD else MaxValues.CAN_CLASSIC_MAX_DATA_FRAME_LENGTH.value
         # Tìm giá trị padding gần nhất lớn hơn chiều dài dữ liệu hiện tại
@@ -82,11 +84,13 @@ class CanTP:
         self.bus.send(msg, timeout=timeout)
         print(f"Message sent: {data}")
 
+    #Gửi FlowControl
     def send_flow_control(self, flow_status=FlowStatus.FLOW_STATUS_CTS.value, block_size=Defaults.BLOCK_SIZE_DEFAULT.value, st_min=Defaults.ST_MIN_DEFAULT.value, timeout= Defaults.TIMEOUT.value):
         pci_byte = PCIType.FLOW_CONTROL.value | flow_status
         flow_control_frame = [pci_byte, block_size, st_min, NAByte, NAByte, NAByte]
         self.send_one_frame(flow_control_frame)
 
+    #Chờ FlowControl, check timeout và trả về FlowStatus, BlockSize và Stmin
     def wait_for_flow_control(self):
         start_time = time.time()
         while True:
@@ -105,6 +109,7 @@ class CanTP:
                     st_min = data[2]
                     return flow_status, block_size, st_min
 
+    #Gửi tin nhắn với độ dài bất kỳ, sẽ tự động phân mảnh tin nhắn dài và xử lý các FlowControl gửi trả
     def send_message(self, data):
         try:
             total_data_length = len(data)
@@ -194,6 +199,7 @@ class CanTP:
         except Exception as e:
             print(f"An error occurred during send: {e}")
 
+    #Chờ và đọc tin nhắn gửi tới, gửi trả các FlowControl nếu có, xử lý waiting và overflow buffer
     def receive_message(self):
         try:
             full_message = []
