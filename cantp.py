@@ -20,11 +20,11 @@ MESSAGER_BUFFER_MAXIMUM_LENGTH=10000    # Độ dài buffer tối đa trước k
 PADDING_SIZES = [8, 12, 16, 20, 24, 32, 48, 64]
 
 N_Ar = 1 # Time for transmission of the CAN frame (any N-PDU) on the receiver side
-N_As = 1 # Time for transmission of the CAN frame (any N-PDU) on the sender side
-N_Br = 1 # Time until transmission of the next flow control N-PDU
+N_As = 0 # Time for transmission of the CAN frame (any N-PDU) on the sender side
+N_Br = 0 # Time until transmission of the next flow control N-PDU
 N_Bs = 1 # Time until reception of the next flow control N-PDU
-N_Cs = 1 # Time until transmission of the next consecutive frame
-N_Cr = 1 # Time until reception of the next consecutive frame
+N_Cs = 0 # Time until transmission of the next consecutive frame
+N_Cr = 0 # Time until reception of the next consecutive frame
 
 # Định nghĩa cho các loại gói tin (Packet Type)
 class PCIType(Enum):
@@ -63,7 +63,7 @@ class MaxValues(Enum):
      
 #Class CANTP
 class CanTP:
-    def __init__(self, bus:can.BusABC, arbitration_id, padding=False, isFD=False):
+    def __init__(self, bus, arbitration_id, padding=False, isFD=False):
         self.bus = bus
         self.arbitration_id = arbitration_id
         self.padding= padding
@@ -173,16 +173,7 @@ class CanTP:
                     flow_status, block_size, st_min = self.wait_for_flow_control()
                     # print(f"flow_status={flow_status}, block_size={block_size}, st_min={st_min}")
 
-                    start_time=time.time()
-
                     if flow_status == FlowStatus.FLOW_STATUS_CTS.value:
-                        if(time.time()-start_time) > N_Cs:
-                            #Vượt quá thời gian chờ tối đa giữa 2 lần Consecutive Frame 
-                            print(f"Next Consecutive Frame Timeout after N_Cs={N_Cs} seconds.")
-                            break
-                        else:
-                            #Không vượt quá thời gian chờ, làm mới thời gian chờ
-                            start_time=time.time()
                         max_payload = MaxValues.MAX_PAYLOAD_PER_CONSECUTIVE_FD_FRAME.value if self.isFD else MaxValues.MAX_PAYLOAD_PER_CONSECUTIVE_CLASSIC_FRAME.value
 
                         while remaining_data:
@@ -243,7 +234,6 @@ class CanTP:
 
                     elif pci_type == PCIType.FIRST_FRAME.value:
                         #FIRST FRAME
-                        start_time= time.time() #đánh dấu thời điểm nhận FirstFrame
                         ff_dl=0
                         if (data[0] & 0x0F) == 0 and data[1] == 0:
                             expected_length = struct.unpack(">I", bytes(data[2:6]))[0]
@@ -258,22 +248,8 @@ class CanTP:
                             print(f"Buffer OverFlow, data length:{ff_dl}, buffer length:{MESSAGER_BUFFER_MAXIMUM_LENGTH}")
                             break   
                         frames_received = 0
-                        if (time.time() - start_time) >N_Br:
-                            #Vượt quá thời gian chờ tối đa giữa FirstFrame và ConsecutiveFrame
-                            print(f"First Consecutive Frame Timeout after N_Br={N_Br} seconds.")
-                            break
-                        else:
-                            #Không vượt quá thời gian chờ, làm mới thời gian chờ và đánh dấu thời điểm gửi FlowControl CTS để gửi consecutive
-                            start_time=time.time()   
-                            self.send_flow_control(timeout= N_Ar)
-                    elif pci_type == PCIType.CONSECUTIVE_FRAME.value:           
-                        if (time.time() - start_time) >N_Cr:
-                            #Vượt quá thời gian chờ tối đa giữa 2 lần Consecutive Frame 
-                            print(f"Next Consecutive Frame Timeout after N_Cr={N_Cr} seconds.")
-                            break
-                        else:
-                            #Không vượt quá thời gian chờ, làm mới thời gian chờ
-                            start_time=time.time()    
+                        self.send_flow_control(timeout= N_Ar)
+                    elif pci_type == PCIType.CONSECUTIVE_FRAME.value:     
                         sequence_number = data[0] & 0x0F
                         full_message += data[1:]
                         frames_received += 1               
