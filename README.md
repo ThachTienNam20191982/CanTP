@@ -22,7 +22,7 @@ Repository này bao gồm một thư viện Python triển khai Giao thức Truy
   Đây là chương trình ví dụ mô phỏng việc gửi và nhận tin nhắn trên một bus CAN ảo. Chương trình này không yêu cầu phần cứng CAN thực tế và sử dụng thư viện `cantp` để minh họa hoạt động của giao thức trong môi trường ảo.
 
 - **sender.py**:  
-  Chương trình sử dụng thư viện `cantp` để gửi tin nhắn qua mạng CAN thực tế. Yêu cầu phần cứng CAN để hoạt động, thường được sử dụng trong các kịch bản thực tế khi cần truyền tin qua mạng CAN.
+  Chương trình sử dụng thư viện `cantp` để gửi tin nhắn qua mạng CAN thực tế. Yêu cầu phần cứng CAN để hoạt động, và nó cho thấy cách các tin nhắn CAN được phân đoạn, gửi và chờ FlowControl.
 
 - **receiver.py**:  
   Chương trình sử dụng thư viện `cantp` để nhận tin nhắn từ mạng CAN thực tế. Yêu cầu phần cứng CAN, và nó cho thấy cách các tin nhắn CAN được nhận, phân đoạn và ghép lại.
