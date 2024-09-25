@@ -10,10 +10,10 @@ import threading
 from cantp import CanTP
 
 # Tạo bus CAN ảo
-bus2 = can.interface.Bus(interface='neovi', channel=1, bitrate=1000000)
+bus2 = can.interface.Bus(interface='neovi', channel=1, bitrate=1000000, receive_own_messages =False)
 
 # Tạo đối tượng CanTP cho bus2
-cantp_receiver = CanTP(bus2, arbitration_id=0x123, padding=False, isFD=False)
+cantp_receiver = CanTP(bus2, arbitration_id=0x100, padding=True, isFD=True)
 
 # Cờ để dừng luồng
 stop_flag = False
