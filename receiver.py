@@ -13,7 +13,7 @@ from cantp import CanTP
 bus2 = can.interface.Bus(interface='neovi', channel=1, bitrate=1000000, receive_own_messages =False)
 
 # Tạo đối tượng CanTP cho bus2
-cantp_receiver = CanTP(bus2, arbitration_id=0x100, padding=True, isFD=True)
+cantp_receiver = CanTP(bus2, arbitration_id=0x123, padding=False, isFD=False)
 
 # Cờ để dừng luồng
 stop_flag = False
